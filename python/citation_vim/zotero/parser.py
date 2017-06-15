@@ -28,8 +28,7 @@ class ZoteroParser(object):
         A zotero database as an array of standardised Items.
         """
         if not check_path(os.path.join(self.zotero_path, u"zotero.sqlite")):
-            raiseError(u"Citation.vim Error:", self.zotero_path, \
-                    u"is not a valid zotero path")
+            raiseError(u"{} is not a valid zotero path".format(self.zotero_path))
             return []
         zotero = ZoteroData(self.context)
         zot_data = zotero.load()
@@ -69,7 +68,7 @@ class ZoteroParser(object):
     def clean(self, string):
         string = self.html_regex.sub('', string)
         return self.clean_regex.sub('', string)
-        
+
 
     def format_key(self, item, zot_item, citekeys):
         """
@@ -84,15 +83,15 @@ class ZoteroParser(object):
             author = zot_item.format_first_author().replace(" ", "_")
             replacements = {
                 u"title": title.lower(),
-                u"Title": title.capitalize(), 
-                u"author": author.lower(), 
+                u"Title": title.capitalize(),
+                u"author": author.lower(),
                 u"Author": author.capitalize(),
-                u"date": date.replace(' ', '-').capitalize() # Date may be 'In-press' 
+                u"date": date.replace(' ', '-').capitalize() # Date may be 'In-press'
             }
             key_format = u'%s' % self.context.key_format
             key = key_format.format(**replacements)
             key = self.context.key_clean_regex.sub("", key)
-            return key 
+            return key
         elif zot_item.id in citekeys:
             return citekeys[zot_item.id]
         else:
