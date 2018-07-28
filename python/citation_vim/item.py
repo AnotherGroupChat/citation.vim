@@ -75,3 +75,11 @@ class Item(object):
     def wrap(self, string):
         wrapper = self.context['wrap_chars']
         return u'%s%s%s' % (wrapper[0], string, wrapper[1])
+
+    def to_list(self, context):
+        return [
+            getattr(self, self.context['source_field']),
+            self.describe(self.context),
+            self.file,
+            self.combined,
+        ]

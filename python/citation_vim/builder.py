@@ -33,7 +33,7 @@ class Builder(object):
         output = []
         for item in self.get_items():
             if self.context['collection'] == "" or self.context['collection'] in item.collections:
-                output.append(self.item_to_array(item))
+                output.append(item.to_list(self.context))
         return output
 
     def get_collections(self):
@@ -66,30 +66,20 @@ class Builder(object):
         output = []
         for item in items:
             if last_item.key == item.key:
-                output.append(self.item_to_array(item))
+                output.append(item.to_list(self.context))
             last_item = item
         return output
 
-    def item_to_array(self, item):
-        return [
-            getattr(item, self.context['source_field']),
-            item.describe(self.context),
-            item.file,
-            item.combined,
-        ]
-
     def get_items(self):
         """
-        Returns items from cache or parser 
+        Returns items from cache or parser
         """
-        if self.cache and self.is_cached(): 
+        if self.cache and self.is_cached():
             return self.read_cache()
         parser = self.get_parser()
+        items = parser.load()
         if self.context['reverse_order']:
-            items = parser.load()
             items.reverse()
-        else:
-            items = parser.load()
         if self.cache:
             self.write_cache(items)
         return items
