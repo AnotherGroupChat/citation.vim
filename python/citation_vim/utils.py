@@ -4,6 +4,7 @@ import sys
 import re
 import os.path
 from datetime import datetime, timedelta
+import pickle
 
 def compat_str(string):
     if sys.version_info[0] == 2:
@@ -36,3 +37,17 @@ def raiseError(message):
 
 def strip_braces(string):
     return re.sub("[{.*}]+", "", string) 
+
+def read_cache(cache_file):
+    """
+    Returns items from the cache file.
+    """
+    with open(cache_file, 'rb') as in_file:
+        return pickle.load(in_file)
+
+def write_cache(cache_file, items):
+    """
+    Writes the cache file.
+    """
+    with open(cache_file, 'wb') as out_file:
+        pickle.dump(items, out_file)

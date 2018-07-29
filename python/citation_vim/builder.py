@@ -2,7 +2,6 @@
 
 import os.path
 import string
-import pickle
 from citation_vim.utils import raiseError
 from citation_vim.item import Item
 
@@ -105,20 +104,6 @@ class Builder(object):
             from citation_vim.zotero.parser import ZoteroParser
             parser = ZoteroParser(self.context)
         return parser
-
-    def read_cache(self):
-        """
-        Returns items from the cache file.
-        """
-        with open(self.cache_file, 'rb') as in_file:
-            return pickle.load(in_file)
-
-    def write_cache(self, items):
-        """
-        Writes the cache file.
-        """
-        with open(self.cache_file, 'wb') as out_file:
-            pickle.dump(items, out_file)
 
     def is_cached(self):
         """
