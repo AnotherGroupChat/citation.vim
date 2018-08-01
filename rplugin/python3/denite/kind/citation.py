@@ -9,13 +9,22 @@ class Kind(Base):
         super().__init__(vim)
 
         self.name = 'citation'
-        self.default_action = 'append'
+        self.default_action = 'default'
         self.persist_actions = ['preview']
 
-    def action_execute(self, context):
+    def action_default(self, context):
         target = context['targets'][0]
-        self.vim.call('denite#util#execute_command',
-                      target['action__command'])
+        source_context = target['source_context']
+
+        if source_context['__source'] is 'sub_sources':
+            self.action_field(context)
+        else:
+            self.action_append(context)
+
+    def action_field(self, context):
+        target = context['targets'][0]
+        cmd = 'Denite citation:{}'.format(target['action__source_field'])
+        self.vim.command(cmd)
 
     def action_open(self, context):
         target = context['targets'][0]

@@ -134,12 +134,9 @@ class Source(Base):
         for sub_source in self.sub_sources:
             candidates.append({
                 "word": sub_source,
-                "action__command": self._set_sub_source(sub_source),
+                "action__source_field": sub_source,
             })
         return candidates
-
-    def _set_sub_source(self, sub_source):
-        return ':Denite citation:{}'.format(sub_source)
 
     def _gather_items(self, context):
         candidates = []
