@@ -51,6 +51,7 @@ class Source(Base):
         self.sub_sources = sub_sources
         self.__cache = False
         self.__cache_file = None
+        self._parser = None
 
         self.vars = {
             'cache_path': "",
@@ -79,6 +80,7 @@ class Source(Base):
             'highlight_blob': "♯♡◆◇◊○◎●◐◑∗∙⊙⊚⌂★☺☻▪■□▢▣▤▥▦▧▨▩",
             'highlight_tiny': "、。‸₊⁺∘♢☆☜☞♢☼",
             'highlight_text': "″‴‶‷",
+            'searchkeys': [],
         }
 
     def on_init(self, context):
@@ -98,21 +100,33 @@ class Source(Base):
             return self._gather_items(context)
 
     def _set_mode(self, context):
+        """ Set up bibtex or zotero mode """
         if self.vars['mode'] == "bibtex" and self.vars['bibtex_file']:
-            self._enable_cache(context)
+            # Enable cache
+            self._enable_cache()
+            # Get parser
+            from citation_vim.bibtex.parser import BibtexParser
+            self._parser = BibtexParser(self.vars)
         elif self.vars['mode'] == "zotero" and self.vars['zotero_path']:
-            if len(context['args']) > 0:
-                context['__searchkeys'] = context['args'].pop(0)
-                self.__cache = False
-            else:
-                context['__searchkeys'] = []
-                self._enable_cache(context)
+            # Check if searchkeys are given and set cache mode accordingly.
+            self._get_searchkeys(context)
+            # Get parser
+            from citation_vim.zotero.parser import ZoteroParser
+            self._parser = ZoteroParser(self.vars)
         else:
             raiseError("'mode' must be set to 'zotero' or 'bibtex'")
 
-    def _enable_cache(self, context):
+    def _enable_cache(self):
         self.__cache = True
         self.__cache_file = join(self.vars['cache_path'], "citation_vim_cache")
+
+    def _get_searchkeys(self, context):
+        if len(context['args']) > 0:
+            self.vars['searchkeys'] = context['args'].pop(0)
+            self.__cache = False
+        else:
+            self.vars['searchkeys'] = []
+            self._enable_cache()
 
     def _gather_sub_sources(self):
         # Generate candidates and return it
@@ -197,25 +211,12 @@ class Source(Base):
         """
         if self.__cache and self._is_cached():
             return read_cache(self.__cache_file)
-        parser = self._get_parser()
-        items = parser.load()
-        if context['__reverse_order']:
+        items = self._parser.load()
+        if self.vars['reverse_order']:
             items.reverse()
         if self.__cache:
             write_cache(self.__cache_file, items)
         return items
-
-    def _get_parser(self):
-        """
-        Returns a bibtex or zotero parser.
-        """
-        if self.vars['mode'] == "bibtex":
-            from citation_vim.bibtex.parser import BibtexParser
-            parser = BibtexParser(self.vars)
-        elif self.vars['mode'] == "zotero":
-            from citation_vim.zotero.parser import ZoteroParser
-            parser = ZoteroParser(self.vars)
-        return parser
 
     def _is_cached(self):
         """
