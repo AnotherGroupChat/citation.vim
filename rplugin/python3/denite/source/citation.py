@@ -112,6 +112,7 @@ class Source(Base):
             self._get_searchkeys(context)
             # Get parser
             from citation_vim.zotero.parser import ZoteroParser
+            self.vars['zotero_version'] = int(self.vars['zotero_version'])
             self._parser = ZoteroParser(self.vars)
         else:
             raiseError("'mode' must be set to 'zotero' or 'bibtex'")
