@@ -11,6 +11,7 @@ class Item(object):
 
     def __init__(self):
         self.zotero_key = ""
+        self.nick = ""
 
     def combine(self):
         pairs = collections.OrderedDict([
@@ -33,6 +34,7 @@ class Item(object):
             ('URL', self.url),
             ('DOI', self.doi),
             ('ISBN', self.isbn),
+            ('Nick', self.nick),
             ('Zotero key', self.zotero_key)
         ])
         self.combined = u"Available citation fields:\n"

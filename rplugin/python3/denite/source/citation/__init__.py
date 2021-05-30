@@ -1,11 +1,17 @@
 import sys
 from os.path import abspath, join, pardir
-from .base import Base
+from denite.base.source import Base
 
 sys.path.append(
-    abspath(join(__file__, pardir, pardir, pardir, pardir, pardir, 'python')))
+    abspath(join(__file__, pardir, pardir, pardir, pardir, pardir, pardir, 'python')))
 from citation_vim.utils import read_cache, write_cache, is_current, raiseError
 from citation_vim.item import Item
+
+import sys
+
+def eprint(*args, **kwargs):
+    raise Exception(*args)
+    print(*args, file=sys.stderr, **kwargs)
 
 sub_sources = [
     "abstract",
@@ -56,11 +62,8 @@ class Source(Base):
         self.vars = {
             'cache_path': "",
             'mode': 'zotero',
-            'zotero_version': 5,
-            'zotero_path': '~/Zotero',
-            'zotero_attachment_path': '~/Zotero/library',
             'collection': "",
-            'bibtex_file': "",
+            'bibtex_file': "/home/dylan/phd/notes/bibtex.bib",
             'reverse_order': True,
             'et_al_limit': 5,
             'key_clean_regex': key_clean_regex,
@@ -101,21 +104,11 @@ class Source(Base):
 
     def _set_mode(self, context):
         """ Set up bibtex or zotero mode """
-        if self.vars['mode'] == "bibtex" and self.vars['bibtex_file']:
-            # Enable cache
-            self._enable_cache()
-            # Get parser
-            from citation_vim.bibtex.parser import BibtexParser
-            self._parser = BibtexParser(self.vars)
-        elif self.vars['mode'] == "zotero" and self.vars['zotero_path']:
-            # Check if searchkeys are given and set cache mode accordingly.
-            self._get_searchkeys(context)
-            # Get parser
-            from citation_vim.zotero.parser import ZoteroParser
-            self.vars['zotero_version'] = int(self.vars['zotero_version'])
-            self._parser = ZoteroParser(self.vars)
-        else:
-            raiseError("'mode' must be set to 'zotero' or 'bibtex'")
+        # Enable cache
+        self._enable_cache()
+        # Get parser
+        from citation_vim.bibtex.parser import BibtexParser
+        self._parser = BibtexParser(self.vars)
 
     def _enable_cache(self):
         self.__cache = True
@@ -220,9 +213,45 @@ class Source(Base):
         """
         Returns boolean based on cache and target file dates
         """
-        if self.vars['mode'] == 'bibtex':
-            file_path = self.vars['bibtex_file']
-        elif self.vars['mode'] == 'zotero':
-            zotero_database = join(self.vars['zotero_path'], "zotero.sqlite")
-            file_path = zotero_database
+        file_path = self.vars['bibtex_file']
         return is_current(file_path, self.__cache_file)
+
+Base = Source
+class Source(Base):
+
+    def __init__(self, vim):
+        super().__init__(vim)
+
+        self.name = 'citation_collection'
+        self.description = "search citation collection"
+        self.kind = 'command'
+
+    def gather_candidates(self, context):
+        """
+        Returns an array of collections.
+        """
+        candidates = {}
+        collections = {}
+        print("hello")
+        for item in self._get_items(context):
+            raise Exception(item)
+            for col in item.collections:
+                if not col in collections:
+                    collections[col] = col
+
+                    candidates.append({
+                        "word": col,
+                        "action__command": self._set_col(col),
+                        # "action__type": ": ",
+                        "action__text": col,
+                        "action__path": col,
+                        "action__directory": dirname(col),
+                    })
+        return candidates
+
+    def _set_collection(self, collection):
+        return "call denite#custom#var('citation', 'collection', '{}')".format(collection)
+Source = Base
+keys = {}
+
+__all__ = ["Source", "keys"]

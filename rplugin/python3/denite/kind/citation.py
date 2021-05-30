@@ -5,6 +5,12 @@ from .command import Kind as Command
 from .file import Kind as File
 from .directory import Kind as Directory
 
+import sys
+
+def eprint(*args, **kwargs):
+    raise Exception(*args)
+    print(*args, file=sys.stderr, **kwargs)
+
 
 class Kind(Word, Command, File, Directory):
 

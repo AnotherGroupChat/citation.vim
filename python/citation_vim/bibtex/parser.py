@@ -47,6 +47,7 @@ class BibtexParser(object):
             item.date      = self.format_date(bib_entry)
             item.url       = self.format_url(bib_entry)
             item.file      = self.format_file(bib_entry)
+            item.nick      = self.get_field(bib_entry, "key")
             item.key       = key
             item.combine()
             items.append(item)
