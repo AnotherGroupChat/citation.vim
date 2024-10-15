@@ -1,2 +1,5 @@
 *~
 .*.sw*
+err
+citation_vim_cache
+__pycache__
