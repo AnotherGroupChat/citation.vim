@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import collections
-from citation_vim.utils import compat_str, is_current, strip_braces
+from citation_vim.utils import strip_braces
+
 
 class Item(object):
-
     """
     Intermediary object between a bibtex/zotero item and a row in unite source output.
     """
@@ -14,33 +14,35 @@ class Item(object):
         self.nick = ""
 
     def combine(self):
-        pairs = collections.OrderedDict([
-            ('Key', self.key),
-            ('Title', self.title),
-            ('Type', self.type),
-            ('Author(s)', self.author),
-            ('Date', self.date),
-            ('Tags', self.tags),
-            ('Collections', ', '.join(self.collections)),
-            ('Publication', self.publication),
-            ('Issue', self.issue),
-            ('Volume', self.volume),
-            ('Pages', self.pages),
-            ('Publisher', self.publisher),
-            ('Language', self.language),
-            ('Abstract', self.abstract),
-            ('Notes', self.notes),
-            ('File(s)', self.file),
-            ('URL', self.url),
-            ('DOI', self.doi),
-            ('ISBN', self.isbn),
-            ('Nick', self.nick),
-            ('Zotero key', self.zotero_key)
-        ])
-        self.combined = u"Available citation fields:\n"
+        pairs = collections.OrderedDict(
+            [
+                ("Key", self.key),
+                ("Title", self.title),
+                ("Type", self.type),
+                ("Author(s)", self.author),
+                ("Date", self.date),
+                ("Tags", self.tags),
+                ("Collections", ", ".join(self.collections)),
+                ("Publication", self.publication),
+                ("Issue", self.issue),
+                ("Volume", self.volume),
+                ("Pages", self.pages),
+                ("Publisher", self.publisher),
+                ("Language", self.language),
+                ("Abstract", self.abstract),
+                ("Notes", self.notes),
+                ("File(s)", self.file),
+                ("URL", self.url),
+                ("DOI", self.doi),
+                ("ISBN", self.isbn),
+                ("Nick", self.nick),
+                ("Zotero key", self.zotero_key),
+            ]
+        )
+        self.combined = "Available citation fields:\n"
         for key, value in pairs.items():
             if value:
-                self.combined += "  " + key + " : " + compat_str(value) + "\n"
+                self.combined += "  " + key + " : " + str(value) + "\n"
 
     def describe(self, context):
         """
@@ -51,7 +53,7 @@ class Item(object):
         return self.describe_with_source_field(desc_values)
 
     def get_description_values(self):
-        desc_fields = self.context['desc_fields']
+        desc_fields = self.context["desc_fields"]
         desc_values = []
         for desc_field in desc_fields:
             val = self.get_field_value(desc_field)
@@ -62,13 +64,13 @@ class Item(object):
         """
         Returns description with added/replaced wrapped source field
         """
-        desc_fields = self.context['desc_fields']
-        desc_format = self.context['desc_format'] 
-        source_field = self.context['source_field']
+        desc_fields = self.context["desc_fields"]
+        desc_format = self.context["desc_format"]
+        source_field = self.context["source_field"]
         wrapped_value = self.wrap(self.get_field_value(source_field))
         if source_field in desc_fields:
             desc_values[desc_fields.index(source_field)] = wrapped_value
-        elif not source_field in ["combined"]:
+        elif source_field not in ["combined"]:
             desc_format += wrapped_value
         return desc_format.format(*desc_values)
 
@@ -76,5 +78,5 @@ class Item(object):
         return strip_braces(getattr(self, field)) if hasattr(self, field) else ""
 
     def wrap(self, string):
-        wrapper = self.context['wrap_chars']
-        return u'%s%s%s' % (wrapper[0], string, wrapper[1])
+        wrapper = self.context["wrap_chars"]
+        return "%s%s%s" % (wrapper[0], string, wrapper[1])
